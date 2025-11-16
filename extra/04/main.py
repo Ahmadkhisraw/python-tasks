@@ -1,37 +1,40 @@
 import re
-import urllib.request
 import csv
+from urllib.request import urlopen
 
-def get_html_content(url):
-    response = urllib.request.urlopen(url)
-    return response.read().decode('utf-8')
+url = "https://msk.spravker.ru/avtoservisy-avtotehcentry/"
+html = urlopen(url).read().decode("utf-8", errors="ignore")
 
-def extract_data(html_content):
-    name_pattern = re.compile(r'<h1>(.*?)</h1>')
-    address_pattern = re.compile(r'<span itemprop="address">(.*?)</span>')
-    phone_pattern = re.compile(r'<a class="tel" href="tel:(.*?)">')
-    hours_pattern = re.compile(r'<strong>Часы работы:</strong>(.*?)</div>')
+name_pattern = r'class="org-widget-header__title-link">([^<]+)'
+names = re.findall(name_pattern, html)
 
-    name = re.search(name_pattern, html_content).group(1)
-    address = re.search(address_pattern, html_content)
-    phones = re.findall(phone_pattern, html_content)
-    hours = re.search(hours_pattern, html_content)
+address_pattern = r'org-widget-header__meta org-widget-header__meta--location">\s*([^<]+)'
+addresses = re.findall(address_pattern, html)
 
-    return name, address, ', '.join(phones), hours
+phone_pattern = r'<dt class="spec__index"><span class="spec__index-inner">Телефон</span></dt>\s*<dd class="spec__value">([^<]+)'
+phones = re.findall(phone_pattern, html)
 
-def save_to_csv(data, filename):
-    with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
-        fieldnames = ['Name', 'Address', 'Phones', 'Hours']
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+hours_pattern = r'<dt class="spec__index"><span class="spec__index-inner">Часы работы</span></dt>\s*<dd class="spec__value">([^<]+)'
+hours = re.findall(hours_pattern, html)
 
-        writer.writeheader()
 
-        writer.writerow({'Name': data[0], 'Address': data[1], 'Phones': data[2], 'Hours': data[3]})
+max_len = max(len(names), len(addresses), len(phones), len(hours))
 
-filename = "avtoservisy.csv"
-url = "https://msk.spravker.ru/avtoservisy-avtotehcentry"
+def pad(lst):
+    lst = lst[:max_len]
+    while len(lst) < max_len:
+        lst.append("")
+    return lst
 
-html_content = get_html_content(url)
-extracted_data = extract_data(html_content)
+names = pad(names)
+addresses = pad(addresses)
+phones = pad(phones)
+hours = pad(hours)
 
-save_to_csv(extracted_data, filename)
+with open("data.csv", "w", encoding="utf-8", newline="") as f:
+    writer = csv.writer(f)
+    writer.writerow(["Название", "Адрес", "Телефон", "Часы работы"])
+    for i in range(max_len):
+        writer.writerow([names[i], addresses[i], phones[i], hours[i]])
+
+print("ГОТОВО! Найдено организаций:", max_len)

@@ -1,18 +1,24 @@
 from random import randint
 
 flag = 1
-random_number = None
+trys = 0
+random_number = randint(0, 100)
+# print(random_number)
 while flag:
-    random_number = randint(0, 100)
-    user_input = int(input("Guess a number between 0 and 100: "))
+    text_input = input("Ввод пользователя: ")
+    if text_input.strip().lower() == "выход":
+        exit(0)
+    
+    user_input = int(text_input)
 
     if user_input == random_number:
         flag = 0
     elif user_input < random_number:
         flag = 1
-        print("Too low")
+        print("Ваше число меньше!")
     else:
         flag = 1
-        print("Too high")
+        print("Ваше число больше!")
+    trys += 1
 
-print(f"Correct! The number was {random_number}")
+print(f"Поздравляем! Вы угадали число за {trys} попытки!")

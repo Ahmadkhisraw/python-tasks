@@ -17,6 +17,6 @@ def create_list(*args, **kwargs):
     return angle_list
 
 
-angles_result = create_list(30.5, 45.75, Point_3=60.0)
+angles_result = create_list(30.5, 45.75, 60.0, pole=21.89617856, put_1=140.85706440)
 
 print(angles_result)
